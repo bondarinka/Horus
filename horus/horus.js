@@ -1,8 +1,10 @@
 const fs = require("fs");
 const grpc = require("grpc");
-const path = require("path");
+// const path = require("path");
 const neo4j = require("./neo4j");
 const request = require("request");
+const horusModel = require("./horusModel.js");
+const { domainToASCII } = require("url");
 
 class horus {
   constructor(name) {
@@ -20,7 +22,7 @@ class horus {
 
   static getReqId() {
     // primitive value - number of millisecond since midnight January 1, 1970 UTC
-    // add service name/ initials to the beginning of reqId?
+    // add service+method name identifier to the beginning of reqId?
     return new Date().valueOf();
   }
   neo4jInit(username, password) {
@@ -52,23 +54,101 @@ class horus {
   // end should be invoked when the request has returned
   end() {
     this.endTime = Number(process.hrtime.bigint());
-    // rt
     this.request.responseTime = (
       (this.endTime - this.startTime) /
       1000000
-    ).toFixed(3); //converting into ms.
-    // check if time is proper(within range)
+    ).toFixed(3); // converting into ms.
+    // check if time is proper (within range)
     // update with new checker when we have logic for calculating avg and stdev
-    if (this.threshold <= this.request.responseTime) {
-      horus.slackAlert(this.request.responseTime, this.targetService);
-    }
-    //if falls outside of threshold then execute alertslackmessage
+    const avg = horus.getAverage(this.targetService);
+    // Getting undefined from static method
+    console.log("Average -> ", avg);
+    // ...
+    // if falls outside of threshold then execute slack alert
+    // if (this.request.responseTime >= this.threshold) {
+    //   horus.slackAlert(this.request.responseTime, this.targetService);
+    // }
     this.sendResponse();
     this.request.timeCompleted = this.getCurrentTime();
+    // save to database the trace object
+    // horus.saveTrace(this.request, this);
   }
 
-  //static method to exeucte slack alerting message
-  static slackAlert(responseTime, service) {
+/***************************** tbd*****************
+// Standard deviation
+let getSD = function (arrayTime) {
+    return Math.sqrt(arrayTime.reduce(function (sq, n) {
+            return sq + Math.pow(n - averageResult, 2);
+        }, 0) / (arrayTime.length - 1));
+};
+
+let twoSd=(2 * getSD(arrayTime));
+***/
+
+  static getAverage(target) {
+    // setup limit to retrieve the recent 50/100 saved times?
+    // skip for pagination (recent/ not first saved)?
+    // pull out only time fields !
+    // let avg;
+    // horusModel.find({targetService: `${target}`}, (err, docs) => {
+    //   if (err) console.log('Error retrieving data for specific service');
+    //   console.log('Docs from DB -> ', docs);
+    //   if (docs.length) {
+    //     avg = (docs.reduce((sum, curr) => sum + curr.responseTime, 0)/ docs.length).toFixed(3);;
+    //     console.log('# of matching docs ', docs.length);
+    //     console.log('AVG ***', avg);
+    //     // return avg;
+    //   }
+    const query = horusModel.find({ targetService: `${target}` });
+    query.exec((err, docs) => {
+      if (err) console.log("Error retrieving data for specific service");
+      console.log("Docs from DB -> ", docs);
+      if (docs.length) {
+        const avg = (
+          docs.reduce((sum, curr) => sum + curr.responseTime, 0) / docs.length
+        ).toFixed(3);
+        console.log("# of matching docs ", docs.length);
+        console.log("AVG ***", avg);
+        return avg;
+      }
+    });
+    // handle the situation when DB is clean and there are no traces saved with
+    // this particular service name as target !
+    // });
+    // console.log("AVG outside DB query ***", avg);
+    // return avg;
+    // horusModel
+    //   .find()
+    //   .populate({ path: "responseTime", match: { targetService: `${target}` } })
+    //   .exec();
+  }
+  static saveTrace(req, a) {
+    const obj = {
+      requestID: req.requestId,
+      // requestID: 1596339848156,
+      serviceName: a.serviceName,
+      targetService: a.targetService,
+      responseTime: req.responseTime,
+      timestamp: req.timeCompleted,
+    };
+    console.log("obj to save *** ", obj);
+    // can pass in to 'create' multiple objects (nesting case)
+    // horusModel.create(obj, (error, result) => {
+    //   if (error)
+    //     console.log("Error while trying to save the trace doc to Mongo DB");
+    // });
+    const traceDoc = new horusModel(obj);
+    traceDoc
+      .save()
+      .then(() => {
+        console.log("Saving of trace was successful");
+      })
+      .catch((err) => {
+        console.log("Error while trying to save trace ->>> ", err);
+      });
+  }
+  // static method to execute slack alerting message
+  static slackAlert(time, service) {
     const obj = {
       text: "\n :interrobang: \n ALERT \n :interrobang: \n ",
       blocks: [
@@ -77,29 +157,29 @@ class horus {
           block_id: "section567",
           text: {
             type: "mrkdwn",
-            text: `\n :interrobang: \n Check your ${service} container, your time is ${responseTime}ms which is above the 2 Standard Deviation Treshold   \n :interrobang: \n`,
+            text: `\n :interrobang: \n Check your '${service}' container, your time is ${time}ms which is above the 2 Standard Deviation Treshold   \n :interrobang: \n`,
           },
           accessory: {
             type: "image",
             image_url:
               "https://cdn.britannica.com/76/193576-050-693A982E/Eye-of-Horus.jpg",
-            alt_text: "Haunted hotel image",
+            alt_text: "Horus_logo",
           },
         },
         {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `the Average time is: tbd...; two standard deviaton: tbd...`,
+            text: `the Average time is: tbd...; two standard deviation: tbd...`,
           },
         },
       ],
     };
+    // move out the link to .env file
     const slackURL =
-      "https://hooks.slack.com/services/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";
+      "https://hooks.slack.com/services/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";
     request.post({
-      uri:
-        "https://hooks.slack.com/services/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",
+      uri: slackURL,
       body: JSON.stringify(obj),
       method: "POST",
       headers: {
@@ -108,31 +188,9 @@ class horus {
     });
   }
 
-  /***************************** tbd*****************
-// write in database to store values:
-// take all response times into an array
-// example ...array of time values
-let arrayTime=[2,4,6,100]
-
-// defining Normal Behavfor set the average time
- average= (arrayTime) => {
-    return arrayTime.reduce((a, b) => (a + b)) / arrayTime.length
-}
-let averageResult= average(arrayTime)
-
-// Standard deviation
-let getSD = function (arrayTime) {
-    return Math.sqrt(arrayTime.reduce(function (sq, n) {
-            return sq + Math.pow(n - averageResult, 2);
-        }, 0) / (arrayTime.length - 1));
-};
-
-let twoSd=(2*getSD(arrayTime))
-* */
-
   // grabTrace accepts inserts trace into request
   // trace represents the "journey" of the request
-  // trace expects metaData to be 'none when the server made no additional requests
+  // trace expects metaData to be 'none' when the server made no additional requests
   // trace expects metaData to be the request object generated by the server otherwise
   // in gRPC, the trace must be sent back as meta data. objects should be converted with JSON.parse
   grabTrace(metaData) {
@@ -176,7 +234,7 @@ let twoSd=(2*getSD(arrayTime))
   }
   writeToFile() {
     console.log("call to writeToFile");
-    console.log("logging request obj ", this.request);
+    // console.log("logging request obj ", this.request);
     let strRequests = "";
     for (let req of this.allRequests) {
       // First write to file - contains Total
@@ -199,7 +257,7 @@ let twoSd=(2*getSD(arrayTime))
       strRequests +=
         "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
     }
-    console.log("strRequests", strRequests);
+    // console.log("strRequests", strRequests);
     fs.writeFile(
       this.serviceName + "data" + ".txt",
       strRequests,

@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-require('dotenv').config();
+const mongoose = require("mongoose");
+require("dotenv").config();
 
 const { Schema } = mongoose;
 
@@ -9,10 +9,13 @@ const customers_db_uri = `${process.env.CUSTOMERS_DB}`;
 
 // const URI = process.env.MONGO_URI || myURI;
 
-mongoose.connect(customers_db_uri, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected!!!********* Customer Database is live!!!'))
-  .catch((err) => console.log('Connection Error ', err));
-
+mongoose
+  .connect(customers_db_uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("Connected!!!********* Customer Database is live!!!"))
+  .catch((err) => console.log("Connection Error ", err));
 
 //  Schema for the database
 const CustomerSchema = new Schema({
@@ -32,13 +35,13 @@ const CustomerSchema = new Schema({
     type: String,
     required: true,
   },
-  favBookId:{
+  favBookId: {
     type: Number,
-    required:true,
-  }
+    required: true,
+  },
 });
 
 // create model and ship out
-const customerModel = mongoose.model('customerModel', CustomerSchema);
+const customerModel = mongoose.model("customerModel", CustomerSchema);
 
 module.exports = customerModel;

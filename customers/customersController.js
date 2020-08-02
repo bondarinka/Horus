@@ -1,8 +1,8 @@
 const customersModel = require("./customersModel.js");
 const customersController = {};
-const path = require('path');
+const path = require("path");
 const booksStub = require(path.join(__dirname, "../stubs/booksStub.js"));
-const grpc = require('grpc')
+const grpc = require("grpc");
 // const booksStub = require("../stubs/booksStub.js");
 
 const horusTracer = require("../horus/horus.js");
@@ -12,7 +12,11 @@ let ht = new horusTracer("customers");
 // Controller create customer
 customersController.createCustomer = (sampleAdd) => {
   customersModel.create(sampleAdd, (error, result) => {
-    if (error) console.log('there was an error writing to the mongo db from the createCustomer controller function  :  ', error);
+    if (error)
+      console.log(
+        "there was an error writing to the mongo db from the createCustomer controller function  :  ",
+        error
+      );
   });
 };
 
@@ -22,22 +26,23 @@ customersController.createCustomer = (sampleAdd) => {
 customersController.deleteCustomer = (custId) => {
   customersModel.findOneAndDelete({ custId: custId }, (error, result) => {
     if (error) {
-      console.log('there was an error writing to the mongo db from the deleteCustomer controller function  :  ', error);
+      console.log(
+        "there was an error writing to the mongo db from the deleteCustomer controller function  :  ",
+        error
+      );
     }
   });
 };
 
 // controller gets all customers in the book db
 customersController.getCustomer = (callback, call) => {
-
   customersModel.findOne(call.request, (err, result) => {
-
     //console.log('result ', result)
 
     function gettingBooks(error, data) {
       ht.end();
       ht.writeToFile();
-      if (error) console.log("sorry, there was an error", error);      
+      if (error) console.log("sorry, there was an error", error);
 
       const customerObj = {};
       customerObj.custId = result.custId;
@@ -46,18 +51,15 @@ customersController.getCustomer = (callback, call) => {
       customerObj.address = result.address;
       customerObj.favBook = data;
 
-      callback(
-        null, 
-        customerObj
-      );
+      callback(null, customerObj);
     }
-    console.log('book id ', {bookId: result.favBookId})
+    console.log("book id ", { bookId: result.favBookId });
 
-    ht.start('books', call);
+    ht.start("books", call);
     booksStub
       .GetBookByID({ bookId: result.favBookId }, gettingBooks)
       .on("metadata", (metadata) => {
-        ht.grabTrace(metadata.get('response')[0])
+        ht.grabTrace(metadata.get("response")[0]);
       });
   });
 };

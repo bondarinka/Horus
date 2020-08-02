@@ -9,3 +9,23 @@ Timestamp: 07/29/2020 11:51:36
 Request ID: 1596037896864
 "books" service -> Response received in 39.784 ms (Total)
 Timestamp: 07/29/2020 11:51:36
+Request ID: 1596339804665
+"books" service -> Response received in 292.292 ms (Total)
+Timestamp: 08/01/2020 23:43:24
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Request ID: 1596339848447
+"books" service -> Response received in 289.611 ms (Total)
+Timestamp: 08/01/2020 23:44:08
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Request ID: 1596341848459
+"books" service -> Response received in 313.647 ms (Total)
+Timestamp: 08/02/2020 00:17:28
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Request ID: 1596341983207
+"books" service -> Response received in 269.577 ms (Total)
+Timestamp: 08/02/2020 00:19:43
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Request ID: 1596342056237
+"books" service -> Response received in 310.929 ms (Total)
+Timestamp: 08/02/2020 00:20:56
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

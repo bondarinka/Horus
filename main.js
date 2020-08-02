@@ -29,7 +29,7 @@ const customerId = {
 
 let ht = new horusTracer("main");
 // temp! user will specify the threshold for request processing times for now for any horus tracer object
-ht.threshold = 25;
+// ht.threshold = 25;
 // ht.neo4jInit("neo4j", "password");
 
 function GetCustomer() {
@@ -38,7 +38,8 @@ function GetCustomer() {
     .GetCustomer(customerId, (error, response) => {
       if (error) console.log("there was an error ", error);
       ht.end();
-      //ht.writeToFile();
+      // ht.displayRequests();
+      ht.writeToFile();
     })
     .on("metadata", (metadata) => {
       ht.grabTrace(metadata.get("response")[0]);
@@ -50,9 +51,9 @@ function CreateCustomer() {
   customersStub
     .CreateCustomer(customer, (error, response) => {
       if (error) console.log("there was an error ", error);
-      console.log("response from createCustomer ", response);
+      // console.log("response from createCustomer ", response);
       ht.end();
-      ht.displayRequests();
+      // ht.displayRequests();
       ht.writeToFile();
     })
     .on("metadata", (metadata) => {
@@ -66,7 +67,7 @@ function DeleteCustomer() {
     .DeleteCustomer(customerId, (error, response) => {
       if (error) console.log("there was an error ", error);
       ht.end();
-      ht.displayRequests();
+      // ht.displayRequests();
       ht.writeToFile();
     })
     .on("metadata", (metadata) => {
@@ -80,7 +81,7 @@ function CreateBook() {
     .CreateBook(book, (error, response) => {
       if (error) console.log("there was an error ", error);
       ht.end();
-      ht.displayRequests();
+      // ht.displayRequests();
       ht.writeToFile();
     })
     .on("metadata", (metadata) => {
@@ -94,7 +95,7 @@ function DeleteBook() {
     .DeleteBook(bookId, (error, response) => {
       if (error) console.log("there was an error ", error);
       ht.end();
-      ht.displayRequests();
+      // ht.displayRequests();
       ht.writeToFile();
     })
     .on("metadata", (metadata) => {
@@ -108,7 +109,7 @@ function GetBooks() {
     .GetBooks({}, (error, response) => {
       if (error) console.log("there was an error ", error);
       ht.end();
-      ht.displayRequests();
+      // ht.displayRequests();
       ht.writeToFile();
     })
     .on("metadata", (metadata) => {
@@ -121,9 +122,9 @@ function GetBookByID() {
   booksStub
     .GetBooks(bookId, (error, response) => {
       if (error) console.log("there was an error ", error);
-      console.log("logging response inside getBookByID", response);
+      // console.log("logging response inside getBookByID", response);
       ht.end();
-      ht.displayRequests();
+      // ht.displayRequests();
       ht.writeToFile();
     })
     .on("metadata", (metadata) => {
@@ -131,5 +132,11 @@ function GetBookByID() {
     });
 }
 
+// 1st -> Intra-service request !
 // GetCustomer();
 CreateCustomer();
+// DeleteCustomer();
+// CreateBook();
+// DeleteBook();
+// GetBooks();
+// GetBookByID();

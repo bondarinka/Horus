@@ -1,6 +1,6 @@
 // const PROTO_PATH = "../protos/customers.proto";
-const path = require('path');
-const PROTO_PATH = path.join(__dirname, '../protos/customers.proto');
+const path = require("path");
+const PROTO_PATH = path.join(__dirname, "../protos/customers.proto");
 const grpc = require("grpc");
 const protoLoader = require("@grpc/proto-loader");
 const express = require("express");
@@ -48,13 +48,13 @@ server.addService(customersProto.CustomersService.service, {
       favBookId: call.request.favBookId,
     };
 
-    console.log('data in create customer ', sampleAdd)
+    console.log("data in create customer ", sampleAdd);
 
     //this actually sends data to customersController.
     controller.createCustomer(sampleAdd);
 
     let meta = new grpc.Metadata();
-    meta.add('response', 'none');
+    meta.add("response", "none");
     call.sendMetadata(meta);
 
     callback(null, {
@@ -73,7 +73,7 @@ server.addService(customersProto.CustomersService.service, {
     console.log("call to DeleteCustomer");
 
     let meta = new grpc.Metadata();
-    meta.add('response', 'none');
+    meta.add("response", "none");
     call.sendMetadata(meta);
 
     //logic to delete customer from Database
@@ -81,8 +81,7 @@ server.addService(customersProto.CustomersService.service, {
 
     callback(null, {});
   },
-}); 
-
+});
 
 server.bind("127.0.0.1:6000", grpc.ServerCredentials.createInsecure());
 console.log("customerServer.js running at http://127.0.0.1:6000");
