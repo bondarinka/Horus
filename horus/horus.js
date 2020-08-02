@@ -74,7 +74,7 @@ class horus {
     // horus.saveTrace(this.request, this);
   }
 
-/***************************** tbd*****************
+  /***************************** tbd*****************
 // Standard deviation
 let getSD = function (arrayTime) {
     return Math.sqrt(arrayTime.reduce(function (sq, n) {
