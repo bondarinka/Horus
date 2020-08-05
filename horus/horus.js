@@ -3,13 +3,10 @@ const grpc = require("grpc");
 // const path = require("path");
 const neo4j = require("./neo4j");
 const request = require("request");
-const horusModel = require("./horusModel.js");
-const { domainToASCII } = require("url");
-
 class horus {
   constructor(name) {
     this.serviceName = name; // represents the name of the microservices
-    // temp hardcoded!
+    // temp !
     this.threshold = null;
     this.startTime = null;
     this.endTime = null;
@@ -19,7 +16,6 @@ class horus {
     this.timeCompleted = null;
     this.call;
   }
-
   static getReqId() {
     // primitive value - number of millisecond since midnight January 1, 1970 UTC
     // add service+method name identifier to the beginning of reqId?
@@ -40,7 +36,6 @@ class horus {
     );
     neo4jObject.makeQueries();
   }
-
   // start should be invoked before the request is made
   // start begins the timer and initializes the request as pending
   start(targetService, call) {
@@ -54,20 +49,17 @@ class horus {
   // end should be invoked when the request has returned
   end() {
     this.endTime = Number(process.hrtime.bigint());
+    // rt
     this.request.responseTime = (
       (this.endTime - this.startTime) /
       1000000
-    ).toFixed(3); // converting into ms.
-    // check if time is proper (within range)
+    ).toFixed(3); //converting into ms.
+    // check if time is proper(within range)
     // update with new checker when we have logic for calculating avg and stdev
-    const avg = horus.getAverage(this.targetService);
-    // Getting undefined from static method
-    console.log("Average -> ", avg);
-    // ...
-    // if falls outside of threshold then execute slack alert
-    // if (this.request.responseTime >= this.threshold) {
-    //   horus.slackAlert(this.request.responseTime, this.targetService);
-    // }
+    if (this.threshold <= this.request.responseTime) {
+      horus.slackAlert(this.request.responseTime, this.targetService);
+    }
+    //if falls outside of threshold then execute alertslackmessage
     this.sendResponse();
     this.request.timeCompleted = this.getCurrentTime();
     // save to database the trace object
@@ -157,7 +149,7 @@ let twoSd=(2 * getSD(arrayTime));
           block_id: "section567",
           text: {
             type: "mrkdwn",
-            text: `\n :interrobang: \n Check your '${service}' container, your time is ${time}ms which is above the 2 Standard Deviation Treshold   \n :interrobang: \n`,
+            text: `\n :interrobang: \n Check your ${service} container, your time is ${responseTime}ms which is above the 2 Standard Deviation Treshold   \n :interrobang: \n`,
           },
           accessory: {
             type: "image",
@@ -170,7 +162,7 @@ let twoSd=(2 * getSD(arrayTime));
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `the Average time is: tbd...; two standard deviation: tbd...`,
+            text: `the Average time is: tbd...; two standard deviaton: tbd...`,
           },
         },
       ],
@@ -187,7 +179,24 @@ let twoSd=(2 * getSD(arrayTime));
       },
     });
   }
-
+/***************************** tbd*****************
+// write in database to store values:
+// take all response times into an array
+// example ...array of time values
+let arrayTime=[2,4,6,100]
+// defining Normal Behavfor set the average time
+ average= (arrayTime) => {
+    return arrayTime.reduce((a, b) => (a + b)) / arrayTime.length
+}
+let averageResult= average(arrayTime)
+// Standard deviation
+let getSD = function (arrayTime) {
+    return Math.sqrt(arrayTime.reduce(function (sq, n) {
+            return sq + Math.pow(n - averageResult, 2);
+        }, 0) / (arrayTime.length - 1));
+};
+let twoSd=(2*getSD(arrayTime))
+* */
   // grabTrace accepts inserts trace into request
   // trace represents the "journey" of the request
   // trace expects metaData to be 'none' when the server made no additional requests
@@ -221,6 +230,7 @@ let twoSd=(2 * getSD(arrayTime));
       this.request[this.targetService] !== "pending" &&
       this.call !== undefined
     ) {
+      console.log('sending response')
       let meta = new grpc.Metadata();
       meta.add("response", JSON.stringify(this.request));
       this.call.sendMetadata(meta);
@@ -257,7 +267,7 @@ let twoSd=(2 * getSD(arrayTime));
       strRequests +=
         "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
     }
-    // console.log("strRequests", strRequests);
+    console.log("strRequests", strRequests);
     fs.writeFile(
       this.serviceName + "data" + ".txt",
       strRequests,
@@ -298,5 +308,4 @@ let twoSd=(2 * getSD(arrayTime));
     );
   }
 }
-
 module.exports = horus;

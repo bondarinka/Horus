@@ -16,7 +16,6 @@ class LeftContainer extends React.Component {
         this.handleCustomerSubmit = this.handleCustomerSubmit.bind(this);
         this.handleBookSubmit = this.handleBookSubmit.bind(this)
         this.handleReset = this.handleReset.bind(this)
-        // this.handleGetBooks = this.handleGetBooks.bind(this)
     }
 
        handleChange(e) {
@@ -80,22 +79,9 @@ class LeftContainer extends React.Component {
             })
        }
 
-    //    handleGetBooks(e){
-    //        e.preventDefault();
-    //        fetch('http://localhost:3000/books', {
-    //            method: 'GET',
-
-    //        })
-    //        .then(res => res.json())
-    //        .then(data => {
-    //            this.props.handleGetBooks(data)
-    //        })
-    //    }
-
     render(){
         return(
             <div className='LeftContainer'>
-                Hello LeftContainer
                 <form onSubmit={this.handleCustomerSubmit} className='CreateCustomerForm'>
                     <h4>Create New Customer</h4>
                     <label>Customer ID:  </label>
@@ -149,9 +135,9 @@ class LeftContainer extends React.Component {
                     />
                     <br />
                     <button type="submit" id="createCustomerButton">Create Customer</button>
-                    {/* <button type="button" id="createCustomerButton" onClick={this.handleCreateCustomerButton}>Create Customer</button> */}
                 </form>
-                <button type="button" id="getCustomerbutton">Get Last Customer</button>
+                <button type="button" id="getCustomerbutton" onClick={this.props.handleGetCustomer}>Get Last Customer</button>
+
                 <form onSubmit={this.handleBookSubmit} className='CreateBookForm'>
                     <h4>Add Book to Bookstore</h4>
                     <label>Title: </label>
