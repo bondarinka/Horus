@@ -121,7 +121,8 @@ function saveTrace(data, horusModel, serviceName, targetName) {
   const request = {
     client: serviceName,
     server: targetName,
-    timestamp: moment(Date.now()).format("MMMM Do YYYY, h:mm:ss a"),
+    timestamp: data.timestamp,
+    // timestamp: moment(Date.now()).format("MMMM Do YYYY, h:mm:ss a"),
     flag: alert,
     methodName: data.methodName,
     responseTime: data.responseTime,
@@ -159,6 +160,7 @@ function makeMethods(
           Number(process.hrtime.bigint() - startTime) / 1000000
         ).toFixed(3);
         metadata[name].id = uuidv4();
+        metadata[name].timestamp = moment(Date.now()).format("MMMM Do YYYY, h:mm:ss a");
         checkTime(
           metadata[name],
           horusModel,
